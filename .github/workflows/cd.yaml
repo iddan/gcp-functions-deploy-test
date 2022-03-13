@@ -1,0 +1,38 @@
+name: Deploy Dev
+on:
+  push:
+    branches:
+      - master
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v2
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_DEV_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_DEV_SA_KEY }}
+          export_default_credentials: true
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build
+        run: yarn build
+			- name: Deploy to GCF
+				uses: google-github-actions/deploy-cloud-functions@v0.8.0
+				with:
+					min_instances: 4
+					runtime: nodejs12
+					name: ****
+					entry_point: ****
+					timeout: 540s
+					env_vars: ****
+					deploy_timeout: 500 # The function deployment timeout in seconds.
